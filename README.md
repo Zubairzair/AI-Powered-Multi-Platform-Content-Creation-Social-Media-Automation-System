@@ -38,3 +38,6 @@ This AI-powered automation agent streamlines the entire content marketing workfl
 2. Import the file into your n8n dashboard.
 3. Configure the required API credentials for OpenAI, Google Sheets, and your specific social media platforms (LinkedIn, Facebook, Instagram, X).
 4. Activate the workflow to start automating your multi-platform content strategy.
+
+## Important Security Note:
+"For security reasons, this JSON file does not include pre-configured credentials. To run this workflow, you must connect your own OpenAI API Key, Google Service Account/OAuth, and CRM credentials within your n8n instance under the 'Credentials' settings."
