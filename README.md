@@ -25,7 +25,7 @@ This AI-powered automation agent streamlines the entire content marketing workfl
 * Core Concepts: Content Automation, Workflow Automation, Marketing Automation
 
 ## Workflow Architecture
-![Workflow Diagram](social_media.png)
+![Workflow Diagram](aocail_media.png)
 
 ## Business Impact
 * 90% Efficiency Gain: Drastically reduces content creation and publishing time.
