@@ -1,5 +1,6 @@
 # AI-Powered Multi-Platform Content Creation & Social Media Automation System
 
+
 ## Overview
 This project is an advanced automation system designed to manage the entire content lifecycle. It transforms a single topic into a fully researched post, complete with AI-generated visuals and platform-optimized captions, and publishes it automatically across multiple social media channels using n8n and Agentic AI.
 
