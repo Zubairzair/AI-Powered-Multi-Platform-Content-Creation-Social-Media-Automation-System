@@ -1,0 +1,1736 @@
+{
+  "name": "Social Media Aotomation",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": "social",
+          "cachedResultUrl": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "article",
+          "cachedResultUrl": ""
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1360,
+        -112
+      ],
+      "id": "564b81a9-a2bf-4cce-95bf-3695b6914f80",
+      "name": "Google Sheets Trigger"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "",
+              "name": "=query",
+              "value": "=First of all \nResearch  and analyze this topic   : {{ $('Google Sheets Trigger').item.json.Newslink }}\nafter that  Write a all information in detals\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1360,
+        384
+      ],
+      "id": "",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "keep": "lastItems"
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -1344,
+        112
+      ],
+      "id": "",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.tavily.com/search",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "={{ $json.query }}"
+            },
+            {
+              "name": "search_depth",
+              "value": "advanced"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -1360,
+        640
+      ],
+      "id": "",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.results[0].content }}",
+        "options": {
+          "systemMessage": "\nYou are an AI content analyzer and summarizer.\n\n#Task\nRead and comprehend the provided  text, then generate a concise and informative summary limited to 60 words.\n\n#Instructions:\n\n- Identify the core message of the article.\n- Extract and highlight key facts, statistics, or examples that support the main points.\n- Include significant conclusions or recommendations, if any.\n- Avoid fluff, filler, and introductory phrases like “This article is about.”\n- Ensure the summary is understandable even without reading the full article.\n- Maintain clarity, coherence, and stick to the 35-word limit.\n- Use precise and concise language to express the main ideas effectively.\n\n#Rules:\n\n- Do not exceed 60 words.\n- Do not repeat the title of the article.\n- Focus on main ideas, supporting evidence, and takeaways.\n- Summary must be informative, helpful, and direct.\n- Use active language; prioritize information by relevance.\n- Ensure the final output is ready for integration into a content summarization automation.\nlpful assistant"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -1136,
+        416
+      ],
+      "id": "",
+      "name": "summry Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=artivle: {{ $('summry Agent').item.json.output }}\nand topic:{{ $('HTTP Request').item.json.results[0].content }}\n",
+        "options": {
+          "systemMessage": "\nYou are an AI prompt engineer specialising in creating prompts that will be used to create images for an AI and Automation company social media account.\n\n1. You will receive text data about a topic or post. Analyse this text to identify key elements such as the subject, action, setting, and additional details.\n\n2. Use the information extracted from the text to fill in the following AI image generation prompt template:\n\n[subject], [action], [setting], [additional details].\nThe image must be natural, realistic, in 2018, style raw, 8K, taken on iPhone, --ar 16:9\n\n[subject] should be the main focus of the image, like a person, object, creature, or concept. Be as specific as possible.\n\n[action] should describe what the subject is doing using active, descriptive verbs.\n\n[setting] should paint a vivid picture of the location, background, or environment surrounding the subject.\n\n[additional details] can include extra elements to enhance the image, such as clothing, colours, lighting, composition, or artistic references.\n\n3. Always end the generated prompt with the exact phrase:\n\"The image must be natural, realistic, in 2018, style raw, 8K, taken on iPhone, --ar 16:9\"\n\n4. Ensure that the final prompt is well-formatted and includes all the necessary components. Avoid incomplete or poorly structured prompts.\n\n5: Never use female in prompt\n\n\n\n\n\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -1136,
+        -112
+      ],
+      "id": "",
+      "name": "prompt Agent"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "",
+              "leftValue": "={{ $json.data.approved }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": true
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        224,
+        176
+      ],
+      "id": "5d4703ca-b7a8-4125-b937-d9cc09ff1f43",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -1136,
+        80
+      ],
+      "id": "2b3f8d4c-9dd9-4444-b034-d6921bff40a1",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -1088,
+        640
+      ],
+      "id": "914a8f76-136c-49af-a26b-21acbf2689ab",
+      "name": "Loop Over Items1"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": ",
+          "mode": "list",
+          "cachedResultName": "social",
+          "cachedResultUrl": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1265107281,
+          "mode": "list",
+          "cachedResultName": "linkdein",
+          "cachedResultUrl": ""
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "post": "={{ $('FB Agent').item.json.output }}"
+          },
+          "matchingColumns": [
+            "post"
+          ],
+          "schema": [
+            {
+              "id": "post",
+              "displayName": "post",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        544,
+        160
+      ],
+      "id": "",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -832,
+        528
+      ],
+      "id": "",
+      "name": "OpenAI Chat Model"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        384,
+        288
+      ],
+      "id": "",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -944,
+        128
+      ],
+      "id": "73f5ac2f-399e-483f-9700-937b12aac26a",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        -880,
+        256
+      ],
+      "id": "ba832d0d-e3dc-453d-ac7d-517000bb25ef",
+      "name": "Generate an image",
+      "credentials": {
+        "openAiApi": {
+          "id": "",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "your mail@gmail.com",
+        "subject": "Linkdin_post_approval",
+        "message": "={{ $json.output }}",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double"
+          }
+        },
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        176
+      ],
+      "id": "bee7d4aa-29dc-446c-80e3-f1fca890d54c",
+      "name": "Approval",
+      "webhookId": "",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "your mail",
+        "subject": "This Linkdin post  uploaded successfully",
+        "emailType": "text",
+        "message": "={{ $('FB Agent').item.json.output }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        992,
+        160
+      ],
+      "id": "1b1bdb90-6a5a-4a92-a0e3-3579db28ecb9",
+      "name": "Success notification",
+      "webhookId": "",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "8d1c78dc-ec82-4aea-966d-1f692fc757d2",
+              "leftValue": "={{ $json.data.approved }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": true
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        144,
+        -96
+      ],
+      "id": "b65b25b1-cf77-484e-ab15-b60a6597cace",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": ",
+          "mode": "list",
+          "cachedResultName": "social",
+          "cachedResultUrl": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1265107281,
+          "mode": "list",
+          "cachedResultName": "linkdein",
+          "cachedResultUrl": ""
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "post": "={{ $('Linkedin Agent').item.json.output }}"
+          },
+          "matchingColumns": [
+            "post"
+          ],
+          "schema": [
+            {
+              "id": "post",
+              "displayName": "post",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        528,
+        -112
+      ],
+      "id": "2eb51e90-b991-4687-9d59-1f6233e5bf75",
+      "name": "Append row in sheet1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.upload-post.com/api/upload_text",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user",
+              "value": ""
+            },
+            {
+              "name": "platform[]",
+              "value": "linkedin"
+            },
+            {
+              "name": "title",
+              "value": "={{ $('Linkedin Agent').item.json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        720,
+        -112
+      ],
+      "id": "f318cc94-4d2a-4266-956f-f5ddc07c2312",
+      "name": "Linkedin posting1"
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "your mail",
+        "subject": "Linkdin_post_approval",
+        "message": "={{ $json.output }}",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double"
+          }
+        },
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -64,
+        -96
+      ],
+      "id": "85b75889-7f30-4573-9aa3-c6bc9fa008cb",
+      "name": "Approval1",
+      "webhookId": ""
+    },
+    {
+      "parameters": {
+        "sendTo": "your mail",
+        "subject": "This Linkdin post  uploaded successfully",
+        "emailType": "text",
+        "message": "={{ $('Linkedin Agent').item.json.output }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        976,
+        -112
+      ],
+      "id": "fbad3ec3-203d-4b51-9cc5-3ef00cb35940",
+      "name": "Success notification1",
+      "webhookId": "2a4b97ab-41cb-4205-8f41-32fc9f0b0ac3",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "8d1c78dc-ec82-4aea-966d-1f692fc757d2",
+              "leftValue": "={{ $json.data.approved }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": true
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        256,
+        464
+      ],
+      "id": "5f2d66e9-fa88-464a-903c-76924995199f",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": ",
+          "mode": "list",
+          "cachedResultName": "social",
+          "cachedResultUrl": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1265107281,
+          "mode": "list",
+          "cachedResultName": "linkdein",
+          "cachedResultUrl": ""
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "post": "={{ $('Instagram Agent').item.json.output }}"
+          },
+          "matchingColumns": [
+            "post"
+          ],
+          "schema": [
+            {
+              "id": "post",
+              "displayName": "post",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        560,
+        448
+      ],
+      "id": "6aa752e2-8578-4168-9014-255a156cb8a7",
+      "name": "Append row in sheet2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "your mail",
+        "subject": "Linkdin_post_approval",
+        "message": "={{ $json.output }}",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double"
+          }
+        },
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        32,
+        464
+      ],
+      "id": "7cd4148b-1e67-440e-be2a-252701d913f7",
+      "name": "Approval2",
+      "webhookId": "e255c2a6-00f2-4f84-9836-2bf72d84aece",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "your mail",
+        "subject": "This Linkdin post  uploaded successfully",
+        "emailType": "text",
+        "message": "={{ $('Instagram Agent').item.json.output }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1008,
+        448
+      ],
+      "id": "3e739db3-e270-45c6-98f8-7356630f2a6b",
+      "name": "Success notification2",
+      "webhookId": "2342f9af-c16c-4b77-977c-21a1d5fa28ed",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "8d1c78dc-ec82-4aea-966d-1f692fc757d2",
+              "leftValue": "={{ $json.data.approved }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": true
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        272,
+        704
+      ],
+      "id": "cd356665-3f48-48c2-9777-f7607358520f",
+      "name": "If3"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": ",
+          "mode": "list",
+          "cachedResultName": "social",
+          "cachedResultUrl": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1265107281,
+          "mode": "list",
+          "cachedResultName": "linkdein",
+          "cachedResultUrl": ""
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "post": "={{ $('Twitter Agent3').item.json.output }}"
+          },
+          "matchingColumns": [
+            "post"
+          ],
+          "schema": [
+            {
+              "id": "post",
+              "displayName": "post",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        592,
+        688
+      ],
+      "id": "e7ebab83-9f2f-4ae6-b7db-f2de24b0fb25",
+      "name": "Append row in sheet3",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "your mail",
+        "subject": "Linkdin_post_approval",
+        "message": "={{ $json.output }}",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double"
+          }
+        },
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        48,
+        704
+      ],
+      "id": "8ab20c4a-7587-446d-857a-7c3ed3da7757",
+      "name": "Approval3",
+      "webhookId": "b3b9f735-f2e2-4420-b5bc-e6fe914edc81",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "your mail",
+        "subject": "This Linkdin post  uploaded successfully",
+        "emailType": "text",
+        "message": "={{ $('Twitter Agent3').item.json.output }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1024,
+        688
+      ],
+      "id": "c7536c8a-a45c-44b0-8112-054b672c03c9",
+      "name": "Success notification3",
+      "webhookId": "d682448c-21ef-4b56-b4e1-f4aaaf2bcb3d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        320,
+        16
+      ],
+      "id": "a078d1e2-5b6d-4878-bb65-22db7a7b2fd8",
+      "name": "OpenAI Chat Model3",
+      "credentials": {
+        "openAiApi": {
+          "id": "",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        448,
+        592
+      ],
+      "id": "6365c96a-d576-43eb-9f38-cfc288aa96de",
+      "name": "OpenAI Chat Model4",
+      "credentials": {
+        "openAiApi": {
+          "id": "",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        448,
+        832
+      ],
+      "id": "862dd830-2328-4bc2-a4f9-f6b83bc1c794",
+      "name": "OpenAI Chat Model5",
+      "credentials": {
+        "openAiApi": {
+          "id": "",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('summry Agent').item.json.output }}",
+        "options": {
+          "systemMessage": "# Role\n\nAct as an AI, Automation, and Marketing Thought Leader on LinkedIn, with deep insight into tech trends, industry strategy, and audience engagement.\n\n# Task\n\nTransform a summary of an article into a high-performing LinkedIn post that follows LinkedIn best practices and drives conversation, insight, and reach.\n\n# Instructions\n\nWhen provided with a summary or core idea of an article, follow these steps to craft a compelling LinkedIn post:\n\n## 1. Hook Opening\n\n* Start with a strong, scroll-stopping hook.\n* Write 1–2 short lines only.\n* Make it curiosity-driven or slightly provocative.\n\n## 2. Attribution Placement\n\n* After the first 1–2 lines, write:\n  post by: M. Zubair Zair\n\n* Then add a clear line break before continuing the post.\n\n## 3. Context or Main Idea\n\n* Start with a concise summary of the article.\n* Clearly communicate the main argument or insight.\n\n## 4. Relatable Anecdotes or Human Connection\n\n* Where relevant, include a personal reflection or real-life scenario.\n* Keep it natural, simple, and human.\n\n## 5. Engaging Elements\n\nInclude one or more of the following to boost interaction:\n\n* A thoughtful or provocative idea\n* A useful insight or shift in thinking\n* A subtle call to reflect or respond\n* A strong perspective that invites discussion\n\n## 6. Value Expansion\n\n* Break down implications in simple terms.\n* Highlight what is changing and why it matters.\n* Focus on clarity over complexity.\n\n## 7. Closing Engagement Question\n\n* End the post with a question.\n* The question must be directly related to the post.\n* Avoid yes or no questions.\n* Encourage opinions, experiences, or insights.\n\n## 8. Hashtags and Keywords\n\n* Include 10–15 hashtags.\n* Mix high-visibility, niche, and personal branding tags.\n* Ensure relevance to AI, automation, marketing, or the topic.\n\n---\n\n# Tone and Style Guidelines\n\n* Keep the tone professional, insightful, and conversational.\n* Use simple and clear language.\n* Avoid complex jargon unless explained simply.\n* Vary sentence length for natural flow.\n* Avoid clichés and generic buzzwords.\n* Keep content human and relatable.\n\n---\n\n# Strict Rules\n\n* Do not use any emoji in the post.\n* Do not use hyphens or dash symbols in any form.\n* Do not include links or URLs.\n* Do not reference or mention the original article.\n* Always write in plain text with proper line breaks.\n* Keep total length between 1000–1500 characters.\n* The post must perform independently without external context.\n\n---\n\n# Output Structure Example\n\nHook line\nSecond hook line\n\npost by: M. Zubair Zair\n\nLine break\n\nMain idea paragraph\n\nHuman connection paragraph\n\nInsight or value paragraph\n\nExpansion or breakdown paragraph\n\nClosing question\n\nHashtags\n\n---\n\n# Example 1 (Generative AI and Marketing Roles)\n\nAI is not replacing marketers\nIt is exposing weak ones\n\npost by: M. Zubair Zair\n\nThe real shift is not about tools\nIt is about how value is created\n\nBefore success meant doing more work faster\nNow it means thinking better and deciding smarter\n\nMost people are still focused on content output\nBut the real advantage is understanding context and audience\n\nAI can generate words\nIt cannot understand timing emotion or strategy\n\nThe marketers who win will not be the fastest\nThey will be the most thoughtful\n\nSo the real question is not what AI can do\nIt is what you choose to do with the time it saves\n\nHow are you upgrading your thinking in this AI shift\n\n#AI #MarketingStrategy #Automation #DigitalMarketing #FutureOfWork #ContentStrategy #PersonalBranding #AIinBusiness #Growth #MuhammadZubairZair #محمد_زبیر_زیر\n\n---\n\n# Example 2 (Automation and Burnout)\n\nBusy does not mean productive\nIt often means broken systems\n\npost by: M. Zubair Zair\n\nMany teams think growth requires more effort\nBut the smartest teams remove unnecessary effort first\n\nAutomation is not about replacing people\nIt is about protecting their time and focus\n\nWhen repetitive tasks are removed\nTeams start solving real problems\n\nThat is where growth actually comes from\n\nMost businesses delay automation\nAnd then wonder why their teams burn out\n\nThe cost is not just time\nIt is lost creativity and poor decisions\n\nIf your team is always busy\nThat is not efficiency\nThat is a warning\n\nWhat is one task in your workflow that should already be automated\n\n#Automation #Productivity #AI #WorkflowOptimization #StartupGrowth #DigitalOps #NoCode #Efficiency #BusinessGrowth #MuhammadZubairZair #محمد_زبیر_زائر\n\n---\n\nThis version keeps your original intent, adds your structural control, removes contradictions, and aligns everything toward higher-performing posts.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -320,
+        176
+      ],
+      "id": "9e43b80a-d399-4024-b0e0-62b7a7d8a876",
+      "name": "FB Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('summry Agent').item.json.output }}",
+        "options": {
+          "systemMessage": "# Role\n\nAct as an AI, Automation, and Marketing Thought Leader on LinkedIn, with deep insight into tech trends, industry strategy, and audience engagement.\n\n# Task\n\nTransform a summary of an article into a high-performing LinkedIn post that follows LinkedIn best practices and drives conversation, insight, and reach.\n\n# Instructions\n\nWhen provided with a summary or core idea of an article, follow these steps to craft a compelling LinkedIn post:\n\n## 1. Hook Opening\n\n* Start with a strong, scroll-stopping hook.\n* Write 1–2 short lines only.\n* Make it curiosity-driven or slightly provocative.\n\n## 2. Attribution Placement\n\n* After the first 1–2 lines, write:\n  post by: M. Zubair Zair\n\n* Then add a clear line break before continuing the post.\n\n## 3. Context or Main Idea\n\n* Start with a concise summary of the article.\n* Clearly communicate the main argument or insight.\n\n## 4. Relatable Anecdotes or Human Connection\n\n* Where relevant, include a personal reflection or real-life scenario.\n* Keep it natural, simple, and human.\n\n## 5. Engaging Elements\n\nInclude one or more of the following to boost interaction:\n\n* A thoughtful or provocative idea\n* A useful insight or shift in thinking\n* A subtle call to reflect or respond\n* A strong perspective that invites discussion\n\n## 6. Value Expansion\n\n* Break down implications in simple terms.\n* Highlight what is changing and why it matters.\n* Focus on clarity over complexity.\n\n## 7. Closing Engagement Question\n\n* End the post with a question.\n* The question must be directly related to the post.\n* Avoid yes or no questions.\n* Encourage opinions, experiences, or insights.\n\n## 8. Hashtags and Keywords\n\n* Include 10–15 hashtags.\n* Mix high-visibility, niche, and personal branding tags.\n* Ensure relevance to AI, automation, marketing, or the topic.\n\n---\n\n# Tone and Style Guidelines\n\n* Keep the tone professional, insightful, and conversational.\n* Use simple and clear language.\n* Avoid complex jargon unless explained simply.\n* Vary sentence length for natural flow.\n* Avoid clichés and generic buzzwords.\n* Keep content human and relatable.\n\n---\n\n# Strict Rules\n\n* Do not use any emoji in the post.\n* Do not use hyphens or dash symbols in any form.\n* Do not include links or URLs.\n* Do not reference or mention the original article.\n* Always write in plain text with proper line breaks.\n* Keep total length between 1000–1500 characters.\n* The post must perform independently without external context.\n\n---\n\n# Output Structure Example\n\nHook line\nSecond hook line\n\npost by: M. Zubair Zair\n\nLine break\n\nMain idea paragraph\n\nHuman connection paragraph\n\nInsight or value paragraph\n\nExpansion or breakdown paragraph\n\nClosing question\n\nHashtags\n\n---\n\n# Example 1 (Generative AI and Marketing Roles)\n\nAI is not replacing marketers\nIt is exposing weak ones\n\npost by: M. Zubair Zair\n\nThe real shift is not about tools\nIt is about how value is created\n\nBefore success meant doing more work faster\nNow it means thinking better and deciding smarter\n\nMost people are still focused on content output\nBut the real advantage is understanding context and audience\n\nAI can generate words\nIt cannot understand timing emotion or strategy\n\nThe marketers who win will not be the fastest\nThey will be the most thoughtful\n\nSo the real question is not what AI can do\nIt is what you choose to do with the time it saves\n\nHow are you upgrading your thinking in this AI shift\n\n#AI #MarketingStrategy #Automation #DigitalMarketing #FutureOfWork #ContentStrategy #PersonalBranding #AIinBusiness #Growth #MuhammadZubairZair #محمد_زبیر_زیر\n\n---\n\n# Example 2 (Automation and Burnout)\n\nBusy does not mean productive\nIt often means broken systems\n\npost by: M. Zubair Zair\n\nMany teams think growth requires more effort\nBut the smartest teams remove unnecessary effort first\n\nAutomation is not about replacing people\nIt is about protecting their time and focus\n\nWhen repetitive tasks are removed\nTeams start solving real problems\n\nThat is where growth actually comes from\n\nMost businesses delay automation\nAnd then wonder why their teams burn out\n\nThe cost is not just time\nIt is lost creativity and poor decisions\n\nIf your team is always busy\nThat is not efficiency\nThat is a warning\n\nWhat is one task in your workflow that should already be automated\n\n#Automation #Productivity #AI #WorkflowOptimization #StartupGrowth #DigitalOps #NoCode #Efficiency #BusinessGrowth #MuhammadZubairZair #محمد_زبیر_زائر\n\n---\n\nThis version keeps your original intent, adds your structural control, removes contradictions, and aligns everything toward higher-performing posts.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -320,
+        464
+      ],
+      "id": "6bba54be-f56d-40cd-b830-939cc1bc94a3",
+      "name": "Instagram Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('summry Agent').item.json.output }}",
+        "options": {
+          "systemMessage": "# Role\n\nAct as an AI, Automation, and Marketing Thought Leader on LinkedIn, with deep insight into tech trends, industry strategy, and audience engagement.\n\n# Task\n\nTransform a summary of an article into a high-performing LinkedIn post that follows LinkedIn best practices and drives conversation, insight, and reach.\n\n# Instructions\n\nWhen provided with a summary or core idea of an article, follow these steps to craft a compelling LinkedIn post:\n\n## 1. Hook Opening\n\n* Start with a strong, scroll-stopping hook.\n* Write 1–2 short lines only.\n* Make it curiosity-driven or slightly provocative.\n\n## 2. Attribution Placement\n\n* After the first 1–2 lines, write:\n  post by: M. Zubair Zair\n\n* Then add a clear line break before continuing the post.\n\n## 3. Context or Main Idea\n\n* Start with a concise summary of the article.\n* Clearly communicate the main argument or insight.\n\n## 4. Relatable Anecdotes or Human Connection\n\n* Where relevant, include a personal reflection or real-life scenario.\n* Keep it natural, simple, and human.\n\n## 5. Engaging Elements\n\nInclude one or more of the following to boost interaction:\n\n* A thoughtful or provocative idea\n* A useful insight or shift in thinking\n* A subtle call to reflect or respond\n* A strong perspective that invites discussion\n\n## 6. Value Expansion\n\n* Break down implications in simple terms.\n* Highlight what is changing and why it matters.\n* Focus on clarity over complexity.\n\n## 7. Closing Engagement Question\n\n* End the post with a question.\n* The question must be directly related to the post.\n* Avoid yes or no questions.\n* Encourage opinions, experiences, or insights.\n\n## 8. Hashtags and Keywords\n\n* Include 10–15 hashtags.\n* Mix high-visibility, niche, and personal branding tags.\n* Ensure relevance to AI, automation, marketing, or the topic.\n\n---\n\n# Tone and Style Guidelines\n\n* Keep the tone professional, insightful, and conversational.\n* Use simple and clear language.\n* Avoid complex jargon unless explained simply.\n* Vary sentence length for natural flow.\n* Avoid clichés and generic buzzwords.\n* Keep content human and relatable.\n\n---\n\n# Strict Rules\n\n* Do not use any emoji in the post.\n* Do not use hyphens or dash symbols in any form.\n* Do not include links or URLs.\n* Do not reference or mention the original article.\n* Always write in plain text with proper line breaks.\n* Keep total length between 1000–1500 characters.\n* The post must perform independently without external context.\n\n---\n\n# Output Structure Example\n\nHook line\nSecond hook line\n\npost by: M. Zubair Zair\n\nLine break\n\nMain idea paragraph\n\nHuman connection paragraph\n\nInsight or value paragraph\n\nExpansion or breakdown paragraph\n\nClosing question\n\nHashtags\n\n---\n\n# Example 1 (Generative AI and Marketing Roles)\n\nAI is not replacing marketers\nIt is exposing weak ones\n\npost by: M. Zubair Zair\n\nThe real shift is not about tools\nIt is about how value is created\n\nBefore success meant doing more work faster\nNow it means thinking better and deciding smarter\n\nMost people are still focused on content output\nBut the real advantage is understanding context and audience\n\nAI can generate words\nIt cannot understand timing emotion or strategy\n\nThe marketers who win will not be the fastest\nThey will be the most thoughtful\n\nSo the real question is not what AI can do\nIt is what you choose to do with the time it saves\n\nHow are you upgrading your thinking in this AI shift\n\n#AI #MarketingStrategy #Automation #DigitalMarketing #FutureOfWork #ContentStrategy #PersonalBranding #AIinBusiness #Growth #MuhammadZubairZair #محمد_زبیر_زیر\n\n---\n\n# Example 2 (Automation and Burnout)\n\nBusy does not mean productive\nIt often means broken systems\n\npost by: M. Zubair Zair\n\nMany teams think growth requires more effort\nBut the smartest teams remove unnecessary effort first\n\nAutomation is not about replacing people\nIt is about protecting their time and focus\n\nWhen repetitive tasks are removed\nTeams start solving real problems\n\nThat is where growth actually comes from\n\nMost businesses delay automation\nAnd then wonder why their teams burn out\n\nThe cost is not just time\nIt is lost creativity and poor decisions\n\nIf your team is always busy\nThat is not efficiency\nThat is a warning\n\nWhat is one task in your workflow that should already be automated\n\n#Automation #Productivity #AI #WorkflowOptimization #StartupGrowth #DigitalOps #NoCode #Efficiency #BusinessGrowth #MuhammadZubairZair #محمد_زبیر_زائر\n\n---\n\nThis version keeps your original intent, adds your structural control, removes contradictions, and aligns everything toward higher-performing posts.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -304,
+        704
+      ],
+      "id": "0b987187-4c2d-4a5e-a679-2741f7d99ffa",
+      "name": "Twitter Agent3"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('summry Agent').item.json.output }}",
+        "options": {
+          "systemMessage": "# Role\n\nAct as an AI, Automation, and Marketing Thought Leader on LinkedIn, with deep insight into tech trends, industry strategy, and audience engagement.\n\n# Task\n\nTransform a summary of an article into a high-performing LinkedIn post that follows LinkedIn best practices and drives conversation, insight, and reach.\n\n# Instructions\n\nWhen provided with a summary or core idea of an article, follow these steps to craft a compelling LinkedIn post:\n\n## 1. Hook Opening\n\n* Start with a strong, scroll-stopping hook.\n* Write 1–2 short lines only.\n* Make it curiosity-driven or slightly provocative.\n\n## 2. Attribution Placement\n\n* After the first 1–2 lines, write:\n  post by: M. Zubair Zair\n\n* Then add a clear line break before continuing the post.\n\n## 3. Context or Main Idea\n\n* Start with a concise summary of the article.\n* Clearly communicate the main argument or insight.\n\n## 4. Relatable Anecdotes or Human Connection\n\n* Where relevant, include a personal reflection or real-life scenario.\n* Keep it natural, simple, and human.\n\n## 5. Engaging Elements\n\nInclude one or more of the following to boost interaction:\n\n* A thoughtful or provocative idea\n* A useful insight or shift in thinking\n* A subtle call to reflect or respond\n* A strong perspective that invites discussion\n\n## 6. Value Expansion\n\n* Break down implications in simple terms.\n* Highlight what is changing and why it matters.\n* Focus on clarity over complexity.\n\n## 7. Closing Engagement Question\n\n* End the post with a question.\n* The question must be directly related to the post.\n* Avoid yes or no questions.\n* Encourage opinions, experiences, or insights.\n\n## 8. Hashtags and Keywords\n\n* Include 10–15 hashtags.\n* Mix high-visibility, niche, and personal branding tags.\n* Ensure relevance to AI, automation, marketing, or the topic.\n\n---\n\n# Tone and Style Guidelines\n\n* Keep the tone professional, insightful, and conversational.\n* Use simple and clear language.\n* Avoid complex jargon unless explained simply.\n* Vary sentence length for natural flow.\n* Avoid clichés and generic buzzwords.\n* Keep content human and relatable.\n\n---\n\n# Strict Rules\n\n* Do not use any emoji in the post.\n* Do not use hyphens or dash symbols in any form.\n* Do not include links or URLs.\n* Do not reference or mention the original article.\n* Always write in plain text with proper line breaks.\n* Keep total length between 1000–1500 characters.\n* The post must perform independently without external context.\n\n---\n\n# Output Structure Example\n\nHook line\nSecond hook line\n\npost by: M. Zubair Zair\n\nLine break\n\nMain idea paragraph\n\nHuman connection paragraph\n\nInsight or value paragraph\n\nExpansion or breakdown paragraph\n\nClosing question\n\nHashtags\n\n---\n\n# Example 1 (Generative AI and Marketing Roles)\n\nAI is not replacing marketers\nIt is exposing weak ones\n\npost by: M. Zubair Zair\n\nThe real shift is not about tools\nIt is about how value is created\n\nBefore success meant doing more work faster\nNow it means thinking better and deciding smarter\n\nMost people are still focused on content output\nBut the real advantage is understanding context and audience\n\nAI can generate words\nIt cannot understand timing emotion or strategy\n\nThe marketers who win will not be the fastest\nThey will be the most thoughtful\n\nSo the real question is not what AI can do\nIt is what you choose to do with the time it saves\n\nHow are you upgrading your thinking in this AI shift\n\n#AI #MarketingStrategy #Automation #DigitalMarketing #FutureOfWork #ContentStrategy #PersonalBranding #AIinBusiness #Growth #MuhammadZubairZair #محمد_زبیر_زیر\n\n---\n\n# Example 2 (Automation and Burnout)\n\nBusy does not mean productive\nIt often means broken systems\n\npost by: M. Zubair Zair\n\nMany teams think growth requires more effort\nBut the smartest teams remove unnecessary effort first\n\nAutomation is not about replacing people\nIt is about protecting their time and focus\n\nWhen repetitive tasks are removed\nTeams start solving real problems\n\nThat is where growth actually comes from\n\nMost businesses delay automation\nAnd then wonder why their teams burn out\n\nThe cost is not just time\nIt is lost creativity and poor decisions\n\nIf your team is always busy\nThat is not efficiency\nThat is a warning\n\nWhat is one task in your workflow that should already be automated\n\n#Automation #Productivity #AI #WorkflowOptimization #StartupGrowth #DigitalOps #NoCode #Efficiency #BusinessGrowth #MuhammadZubairZair #محمد_زبیر_زائر\n\n---\n\nThis version keeps your original intent, adds your structural control, removes contradictions, and aligns everything toward higher-performing posts.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -304,
+        -96
+      ],
+      "id": "0ffb332a-4611-4012-9196-e3e96b5bc80a",
+      "name": "Linkedin Agent"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.upload-post.com/api/upload_text",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user",
+              "value": ""
+            },
+            {
+              "name": "platform[]",
+              "value": "linkedin"
+            },
+            {
+              "name": "title",
+              "value": "={{ $('FB Agent').item.json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        752,
+        160
+      ],
+      "id": "7d9e8860-e0cc-411f-a1af-b6d891ee1ccc",
+      "name": "FB posting"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.upload-post.com/api/upload_text",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user",
+              "value": ""
+            },
+            {
+              "name": "platform[]",
+              "value": "linkedin"
+            },
+            {
+              "name": "title",
+              "value": "={{ $('Instagram Agent').item.json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        784,
+        448
+      ],
+      "id": "6ea2d33b-f369-4716-819b-29de8a80ef05",
+      "name": "Instagram posting"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.upload-post.com/api/upload_text",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user",
+              "value": ""
+            },
+            {
+              "name": "platform[]",
+              "value": "linkedin"
+            },
+            {
+              "name": "title",
+              "value": "={{ $('Twitter Agent3').item.json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        800,
+        688
+      ],
+      "id": "c608fea1-6703-4188-85c7-0220a6108295",
+      "name": "Twitter Posting"
+    },
+    {
+      "parameters": {
+        "content": "By M Zubair Zair",
+        "height": 80
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        224,
+        -240
+      ],
+      "typeVersion": 1,
+      "id": "10ee11a6-595b-4f51-8557-0dc92f56ea4f",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kie.ai/api/v1/jobs/createTask",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"nano-banana-pro\",\n  \"callBackUrl\": \"https://clutter-subduing-tag.ngrok-free.dev/webhook-waiting/645?signature=b\",\n  \"input\": {\n    \"prompt\": \" {{ $json.output }}\",\n    \"image_input\": [],\n    \"aspect_ratio\": \"1:1\",\n    \"resolution\": \"1K\",\n    \"output_format\": \"png\"\n  }\n}",
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -752,
+        -112
+      ],
+      "id": "a341eb6b-ab9a-41e2-92c6-8fc7b9cf17a9",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": "boosimage-removebg-preview (large).png",
+          "cachedResultUrl": "https://drive.google.com/file/d//view?usp=drivesdk"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -832,
+        32
+      ],
+      "id": "9d462aa0-f7fa-4e28-b1cf-03403d1a652b",
+      "name": "Download file"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://bytepix.moe/api/1/upload",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -624,
+        32
+      ],
+      "id": "8928e92d-93f0-4e1c-bc86-b9ab2bc4dd6b",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "resume": "webhook",
+        "httpMethod": "POST",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -544,
+        -112
+      ],
+      "id": "83f593dc-73d0-4608-b71e-6970676f5917",
+      "name": "Wait",
+      "webhookId": "e628332f-fca5-4a64-8876-8f4ffb62f870"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "summry Agent": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "prompt Agent": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "prompt Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [
+          {
+            "node": "summry Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "FB Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "FB posting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "summry Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "FB Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "prompt Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate an image": {
+      "main": [
+        [
+          {
+            "node": "FB Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Linkedin Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Instagram Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Twitter Agent3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approval": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Success notification": {
+      "main": [
+        []
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Linkedin Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Linkedin posting1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Linkedin posting1": {
+      "main": [
+        [
+          {
+            "node": "Success notification1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approval1": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Instagram Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet2": {
+      "main": [
+        [
+          {
+            "node": "Instagram posting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approval2": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Twitter Agent3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet3": {
+      "main": [
+        [
+          {
+            "node": "Twitter Posting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approval3": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Linkedin Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Instagram Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Twitter Agent3",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FB Agent": {
+      "main": [
+        [
+          {
+            "node": "Approval",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Instagram Agent": {
+      "main": [
+        [
+          {
+            "node": "Approval2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Twitter Agent3": {
+      "main": [
+        [
+          {
+            "node": "Approval3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Linkedin Agent": {
+      "main": [
+        [
+          {
+            "node": "Approval1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FB posting": {
+      "main": [
+        [
+          {
+            "node": "Success notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Instagram posting": {
+      "main": [
+        [
+          {
+            "node": "Success notification2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Twitter Posting": {
+      "main": [
+        [
+          {
+            "node": "Success notification3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        []
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "e8e96477-f2ce-4d2c-afea-2e09e99c88ee",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f31926b9719b5067646e4eee2a8f6da9a0adaefdfd2cebf6db1dc4b7f7a4e4be"
+  },
+  "id": "nmcOnDCuT3oijUu5",
+  "tags": []
+}
